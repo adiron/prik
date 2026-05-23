@@ -47,6 +47,17 @@ var moveDown = map[uint8]uint8 {
  5: 7,
 }
 
+var flipV = map[uint8]uint8 {
+	0: 6,
+	1: 2,
+	2: 1,
+	6: 0,
+	3: 7,
+	4: 5,
+	5: 4,
+	7: 3,
+}
+
 type Key int
 
 const (
@@ -58,6 +69,8 @@ const (
 	KeyRight
 	KeySpace
 	KeyA
+	KeyFlipH
+	KeyFlipV
 	Key1
 	Key2
 	Key3
@@ -154,6 +167,25 @@ func (p *Picker) Run() Result {
 				break
 			}
 			p.dots = p.dots ^ (1 << p.cursor)
+
+		case KeyFlipH:
+			var newDots uint8 = 0
+			for before, after := range moveSide {
+				if (p.dots >> before) & 0b01 == 1 {
+					newDots |= 0b01 << after
+				}
+			}
+			p.dots = newDots
+
+		case KeyFlipV:
+			var newDots uint8 = 0
+			for before, after := range flipV {
+				if (p.dots >> before) & 0b01 == 1 {
+					newDots |= 0b01 << after
+				}
+			}
+			p.dots = newDots
+
 		}
 		p.draw()
 	}
@@ -210,7 +242,7 @@ func (p *Picker) draw() {
 	fmt.Fprint(p.tty, "\r\x1b[2K")
 	fmt.Fprintf(
 		p.tty, 
-		"7 %s %s 8",
+		"7 %s %s 8   flip H/V",
 		dotMark(p.dots, 6, p.cursor == 6),
 		dotMark(p.dots, 7, p.cursor == 7),
 	)
@@ -275,6 +307,10 @@ func (p *Picker) readKey() Key {
 			return KeyLeft
 		case 'l':
 			return KeyRight
+		case 'H':
+			return KeyFlipH
+		case 'V':
+			return KeyFlipV
 		case '1':
 			return Key1
 		case '2':
