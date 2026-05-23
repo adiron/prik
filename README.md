@@ -15,5 +15,7 @@ whatever weird workflows you have (I do not judge and I do not care).
 ## Example:
 
 ```bash
-echo $(prik) >> somefile.txt
+prik >> somefile.txt
 ```
+
+Or something, I don't know.
