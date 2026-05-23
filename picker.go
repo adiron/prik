@@ -9,6 +9,43 @@ import (
 
 const numLines = 5
 const brailleStart = 0x2800
+const hlStart = "\x1b[1;33;4m"
+const hlEnd = "\x1b[0m"
+const markNo = "[ ]"
+const markYes = "[x]"
+
+var moveSide = map[uint8]uint8 {
+	0: 3,
+	1: 4,
+	2: 5,
+	3: 0,
+	4: 1,
+	5: 2,
+	6: 7,
+	7: 6,
+}
+
+var moveUp = map[uint8]uint8 {
+ 0: 6,
+ 1: 0,
+ 2: 1,
+ 6: 2,
+ 3: 7,
+ 4: 3,
+ 5: 4,
+ 7: 5,
+}
+
+var moveDown = map[uint8]uint8 {
+ 6: 0,
+ 0: 1,
+ 1: 2,
+ 2: 6,
+ 7: 3,
+ 3: 4,
+ 4: 5,
+ 5: 7,
+}
 
 type Key int
 
@@ -85,87 +122,32 @@ func (p *Picker) Run() Result {
 			}
 		case Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8:
 			p.dots = p.dots ^ (1 << uint8(key - Key1))
-		case KeyRight, KeyLeft:
+		case KeyLeft:
 			if p.cursor == 255 {
-				if key == KeyLeft {
-					// This is the ONLY difference in logic between the keys here btw
 					p.cursor = 3
-				} else {
-					p.cursor = 0
-				}
 				break
 			}
+			p.cursor = moveSide[p.cursor]
 
-			if p.cursor == 6 {
-				p.cursor = 7
+		case KeyRight:
+			if p.cursor == 255 {
+				p.cursor = 0
 				break
 			}
-			if p.cursor == 7 {
-				p.cursor = 6
-				break
-			}
+			p.cursor = moveSide[p.cursor]
 
-			if p.cursor < 3 {
-				p.cursor += 3
-			} else {
-				p.cursor -= 3
-			}
 		case KeyDown:
 			if p.cursor == 255 {
 				p.cursor = 0
 				break
 			}
-
-			// Wrap
-			if p.cursor == 6 {
-				p.cursor = 0
-				break
-			}
-
-			if p.cursor == 7 {
-				p.cursor = 3
-				break
-			}
-
-			// Jump to extra dots
-			if p.cursor == 2 {
-				p.cursor = 6
-				break
-			}
-
-			if p.cursor == 5 {
-				p.cursor = 7
-				break
-			}
-
-			p.cursor++
+			p.cursor = moveDown[p.cursor]
 		case KeyUp:
 			if p.cursor == 255 {
 				p.cursor = 6
 				break
 			}
-
-			if p.cursor == 6 {
-				p.cursor = 2
-				break
-			}
-
-			if p.cursor == 7 {
-				p.cursor = 5
-				break
-			}
-
-			if p.cursor == 0 {
-				p.cursor = 6
-				break
-			}
-
-			if p.cursor == 3 {
-				p.cursor = 7
-				break
-			}
-
-			p.cursor--
+			p.cursor = moveUp[p.cursor]
 
 		case KeySpace:
 			if p.cursor == 255 {
@@ -178,16 +160,16 @@ func (p *Picker) Run() Result {
 }
 
 func dotMark(dots uint8, nth uint8, highlight bool) string {
-	start := ""
-	end := ""
-	if highlight {
-		start = "\x1b[1;33;4m"
-		end = "\x1b[0m"
-	}
+	mark := markNo
 	if (dots >> nth) & 0b01 == 1 {
-		return start + "[x]" + end
+		mark = markYes
 	}
-	return start + "[ ]" + end
+
+	if highlight {
+		return hlStart + mark + hlEnd
+	}
+
+	return mark
 }
 
 func (p *Picker) draw() {
@@ -268,8 +250,8 @@ func (p *Picker) clearInline() {
 }
 
 func (p *Picker) readKey() Key {
-	buf := make([]byte, 8)
-	n, err := p.tty.Read(buf)
+	var buf [8]byte
+	n, err := p.tty.Read(buf[:])
 	if err != nil {
 		return KeyUnknown
 	}
