@@ -8,6 +8,7 @@ import (
 )
 
 const numLines = 5
+const brailleStart = 0x2800
 
 type Key int
 
@@ -73,7 +74,7 @@ func (p *Picker) Run() Result {
 		key := p.readKey()
 		switch key {
 		case KeyEnter:
-			return Result{Output: string(makeBraille(p.dots)), Code: 0}
+			return Result{Output: string(rune(brailleStart + rune(p.dots))), Code: 0}
 		case KeyBreak:
 			return Result{Code: 1}
 		case KeyA:
@@ -190,7 +191,7 @@ func dotMark(dots uint8, nth uint8, highlight bool) string {
 }
 
 func (p *Picker) draw() {
-	char := makeBraille(p.dots)
+	char := rune(rune(p.dots) + brailleStart)
 	// --- Line 1
 	// Begin. Do the return thing to bring the cursor back and erase the line
 	fmt.Fprint(p.tty, "\r\x1b[2K")
