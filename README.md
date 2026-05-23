@@ -7,7 +7,7 @@ are very useful for all sorts of visual purposes.
 
 This simple program shows a cool interactive screen where a user can create a
 specific Braille character via `stdout`. Use the number keys to toggle the
-(slightly wierdly) numbered dots, or use the arrow keys.
+(slightly weirdly) numbered dots, or use the arrow keys.
 
 Because of this tool using `stdout` it is very easy to embed it or use it in
 whatever weird workflows you have (I do not judge and I do not care).
