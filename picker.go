@@ -301,7 +301,7 @@ func (p *Picker) readKey() Key {
 		switch b[0] {
 		case '\r', '\n':
 			return KeyEnter
-		case 0x03:
+		case 0x03, 'q':
 			return KeyBreak
 		case ' ':
 			return KeySpace
