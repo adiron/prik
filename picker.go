@@ -290,6 +290,10 @@ func (p *Picker) readKey() Key {
 	b := buf[:n]
 
 	if n == 1 {
+		if b[0] >= '1' && b[0] <= '8' {
+			return Key1 + Key(b[0] - '1')
+		}
+
 		switch b[0] {
 		case '\r', '\n':
 			return KeyEnter
@@ -311,22 +315,6 @@ func (p *Picker) readKey() Key {
 			return KeyFlipH
 		case 'V':
 			return KeyFlipV
-		case '1':
-			return Key1
-		case '2':
-			return Key2
-		case '3':
-			return Key3
-		case '4':
-			return Key4
-		case '5':
-			return Key5
-		case '6':
-			return Key6
-		case '7':
-			return Key7
-		case '8':
-			return Key8
 		}
 	}
 
