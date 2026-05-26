@@ -71,6 +71,7 @@ const (
 	KeyA
 	KeyFlipH
 	KeyFlipV
+	KeyInvert
 	Key1
 	Key2
 	Key3
@@ -186,6 +187,9 @@ func (p *Picker) Run() Result {
 			}
 			p.dots = newDots
 
+		case KeyInvert:
+			p.dots = ^p.dots
+
 		}
 		p.draw()
 	}
@@ -242,7 +246,7 @@ func (p *Picker) draw() {
 	fmt.Fprint(p.tty, "\r\x1b[2K")
 	fmt.Fprintf(
 		p.tty, 
-		"7 %s %s 8   flip H/V",
+		"7 %s %s 8   flip H/V  invert i",
 		dotMark(p.dots, 6, p.cursor == 6),
 		dotMark(p.dots, 7, p.cursor == 7),
 	)
@@ -315,6 +319,8 @@ func (p *Picker) readKey() Key {
 			return KeyFlipH
 		case 'V':
 			return KeyFlipV
+		case 'i':
+			return KeyInvert
 		}
 	}
 
