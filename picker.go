@@ -267,14 +267,14 @@ func (p *Picker) draw() {
 
 func (p *Picker) initInline() {
 	fmt.Fprint(p.tty, "\x1b[?25l") // Hide cursor
-	for i := 0; i < numLines; i++ {
+	for range numLines {
 		fmt.Fprint(p.tty, "\r\n")
 	}
 	fmt.Fprintf(p.tty, "\x1b[%dA", numLines)
 }
 
 func (p *Picker) clearInline() {
-	for i := 0; i < numLines; i++ {
+	for i := range numLines {
 		fmt.Fprint(p.tty, "\r\x1b[2K")
 		if i < numLines-1 {
 			fmt.Fprint(p.tty, "\x1b[1B")
