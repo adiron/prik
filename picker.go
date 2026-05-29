@@ -88,7 +88,7 @@ type Picker struct {
 	fd       int
 	oldState *term.State
 	cursor   uint8
-	dots     uint8
+	dots     BinArr8
 }
 func NewPicker() (*Picker, error) {
 	tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
@@ -135,7 +135,7 @@ func (p *Picker) Run() Result {
 				p.dots = 0b11111111
 			}
 		case Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8:
-			p.dots = p.dots ^ (1 << uint8(key - Key1))
+			p.dots.flipBit(uint8(key - Key1))
 		case KeyLeft:
 			if p.cursor == 255 {
 					p.cursor = 3
@@ -167,10 +167,10 @@ func (p *Picker) Run() Result {
 			if p.cursor == 255 {
 				break
 			}
-			p.dots = p.dots ^ (1 << p.cursor)
+			p.dots.flipBit(p.cursor)
 
 		case KeyFlipH:
-			var newDots uint8 = 0
+			var newDots BinArr8 = 0
 			for before, after := range moveSide {
 				if (p.dots >> before) & 0b01 == 1 {
 					newDots |= 0b01 << after
@@ -179,7 +179,7 @@ func (p *Picker) Run() Result {
 			p.dots = newDots
 
 		case KeyFlipV:
-			var newDots uint8 = 0
+			var newDots BinArr8 = 0
 			for before, after := range flipV {
 				if (p.dots >> before) & 0b01 == 1 {
 					newDots |= 0b01 << after
@@ -195,9 +195,9 @@ func (p *Picker) Run() Result {
 	}
 }
 
-func dotMark(dots uint8, nth uint8, highlight bool) string {
+func dotMark(dots BinArr8, nth uint8, highlight bool) string {
 	mark := markNo
-	if (dots >> nth) & 0b01 == 1 {
+	if dots.isBitFlipped(nth) {
 		mark = markYes
 	}
 
